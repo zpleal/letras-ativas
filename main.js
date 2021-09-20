@@ -14,10 +14,9 @@ window.addEventListener("load",() => {
     $('ok').onclick = () => {
 
         doFullScreen();
-        doMode();
-        doPanelImage();
 
-        gamePanel.reset();
+        gamePanel.imageURL = getRadioValue('panel');
+        gamePanel.mode = getRadioValue('mode');
         
         configsDialog.style.display = 'none';
     };
@@ -29,25 +28,16 @@ window.addEventListener("load",() => {
 
 window.addEventListener('resize',() => {
     if(gamePanel) 
-        gamePanel.recreateCanvas();
+        gamePanel.readjust();
 });
 
-function doMode() {
-    const mode = getRadioValue('mode');
-
-    switch(mode) {
-        case 'trace': gamePanel.doTrace(); break;
-        case 'tap':   gamePanel.doTap(); break;
-        default: console.log('invalid mode: '+ mode);
-    }
-}
 
 function doFullScreen() {
     const fullscreen = getRadioValue('fullscreen');
     switch(fullscreen) {
         case 'yes': 
             if(! document.fullscreenElement)
-                document.documentElement.requestFullscreen();
+                document.documentElement.requestFullscreen({ navigationUI: "hide" });
         break;
         case 'no':   
             if(document.fullscreenElement)
@@ -57,12 +47,6 @@ function doFullScreen() {
     }
 }
 
-function doPanelImage() {
-    const image = new Image();
-    image.onload = () => gamePanel.showBackgroundImage();
-    image.src = getRadioValue('panel');
-    gamePanel.image = image;
-}
 
 function getRadioValue(name) {
     const radios = document.querySelectorAll('input[name="'+name+'"]');
@@ -75,6 +59,7 @@ function getRadioValue(name) {
 
 function populateImagesPanel() {
     const panels = $('panels');
+    let first = true;
 
     for(let {image,title} of configs.panels) {
         const id    = "panel-"+title+"-"+image;
@@ -85,6 +70,11 @@ function populateImagesPanel() {
         input.setAttribute("id",id);
         input.setAttribute("name","panel");
         input.setAttribute("value",image);
+
+        if(first) {
+            input.setAttribute("checked",true);
+            first = false;
+        }
 
         label.setAttribute("for",id);
         label.appendChild(document.createTextNode(title));
