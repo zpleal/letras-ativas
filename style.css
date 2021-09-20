@@ -1,6 +1,10 @@
 
 body {
   position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 canvas {
@@ -16,6 +20,8 @@ canvas {
   right: 0px;
   top: 0px;
 
+  margin: 0.5em;
+
   font-size: large;
   font-weight: bold;
 
@@ -28,18 +34,13 @@ canvas {
   
   background-color: white;
 
-  top: 10%;
-  left: 10%;
-  width: 80%;
-  height: 80%;
-
   padding: 2em;
 
   border-width: 3px;
-  border-style: double;
+  border-style: ridge;
 
   border-radius: 2em;
-  box-shadow: 5px 5px 2px 2px lightgray;
+  box-shadow: 3px 3px 2px 2px lightgray;
 }
 
 .button {
@@ -48,14 +49,22 @@ canvas {
  height: 2em;
  margin: 1em;
  line-height: 2em;
- border-width: 2px;
+ border-width: 1px;
  border-radius: 1em;
  border-style: solid;
- box-shadow: 5px 5px 2px 2px lightgrey;
+ box-shadow: 1px 3px 2px 2px lightgrey;
  text-align: center;
  font-size: larger;
  font-weight: bold; 
  cursor: pointer;
+}
+
+.button:hover {
+  background-color: lightgray;
+}
+
+.button:active {
+  box-shadow: 1px 1px 2px 2px lightgrey;
 }
 
 input[type=radio] {
