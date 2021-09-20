@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Letras Activas - protótipo</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" href="style.css" type="text/css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="Description" content="Protótipo de uma app para aprender a escrever">
+    <script src="LetterTracer.js" ></script>
+    <script src="main.js" ></script>
+  </head>
+  <body>
+
+    <h1>Letras Activas - protótipo</h1>
+    <p> 
+      Desenha sobre as letras. Podes usar o rato. 
+      Se tiveres um ecrã <i>touch</i>, podes usar o dedo ou um estilete. 
+      Usa estes <button id="browsers"><i>browsers</i></button>.
+    </p>
+
+    <div id="paper"></div>
+
+    <div id="controls">
+    Letras: <input id="text" value="a b c"> <br>
+    Tipo:
+    <select id="family">
+      <option value="CreamyChocolate" > Creamy Chocolate</option>
+      <option value="Marmellata" selected>Marmellata</option>
+      <option value="RuangJenuh">Ruang Jenuh</option>
+      <option value="LucyTheCatRegular">Lucy the Cat</option>
+    </select>
+    Tamanho <select id="size">
+      <option>48</option>
+      <option selected>96</option>
+      <option>144</option>
+    </select><br>
+    </select>
+    <button id="reset">Limpar traços</button>
+    <button id="show">Ver traços</button>
+  </div>
+
+  <div id="d-strokes">
+    <div id="strokes">
+
+    </div>
+    <button id="s-ok">Ok</button>
+  </div>
+
+  <div id="d-browsers">
+    <p>
+      Deverá funcionar nos seguintes <i>browsers</i>, a partir das versões indicadas.
+    </p>
+    <table rules="all" frame="box" cellpadding="2">
+      <tr><th>Fornecedor</th>               <th>Desktop</th>   <th>Mobile</th>     </tr>
+      <tr><td>Chrome</td>                    <td>55</td>       <td>55</td>     </tr>
+      <tr><td>Firefox</td>                   <td>59</td>       <td>79</td>     </tr>
+      <tr><td>Edge</td>                      <td>12</td>       <td>  </td>     </tr>
+      <tr><td>IE</td>                        <td>11*</td>      <td>  </td>     </tr>
+      <tr><td>Opera</td>                     <td>42</td>       <td>42</td>     </tr>
+      <tr><td>Safari</td>                    <td>13</td>       <td>13</td>     </tr>
+      <tr><td>Android WebView</td>           <td></td>         <td>55</td>     </tr>
+      <tr><td>Samsung</td>                   <td></td>         <td>7.0</td>    </tr>
+    </table>
+
+    * o <i>tilt</i> não deverá funcionar no IE.
+
+    <button id="b-ok">Ok</button>
+</div>
+
+
+  </body>
+</head>

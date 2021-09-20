@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Letras Activas - protótipo</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" href="style.css" type="text/css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="Description" content="Writting games with tracing and tapping">
+    <script src="GamePanel.js" ></script>
+    <script src="configs.js" ></script>
+    <script src="main.js" ></script>
+  </head>
+  <body>
+
+    <div id="openConfigs">&vellip;</div>
+
+    <div id="configsDialog">
+
+      <fieldset id="panels"> <legend>Panel</legend>
+
+      </fieldset>
+      <fieldset> <legend>Fullscreen</legend> 
+          <input id="fullscreen-no"  checked type="radio" name="fullscreen" value="no">
+          <label for="fullscreen-no">No</label>   
+          
+          <input id="fullscreen-yes" type="radio" name="fullscreen" value="yes">
+          <label for="fullscreen-yws">Yes</label> 
+  
+        </fieldset>
+        <fieldset> <legend>Mode</legend>
+          <input id="trace" checked type="radio" name="mode" value="trace">
+          <label for="trace">Trace</label> 
+  
+          <input id="tap"   type="radio" name="mode" value="tap">
+          <label for="tap">Tap</label>   
+  
+        </fieldset>
+
+      <div id="cancel"  class="button"> Cancel  </div>
+      <div id="ok"      class="button"> Ok      </div>
+    </div>
+
+
+  </body>
+</head>
