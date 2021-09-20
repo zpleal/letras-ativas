@@ -12,7 +12,6 @@ class GamePanel {
 		lineColor: 		  "#16264c",						//dark shade of blue
 		radius:                  20,
 		parent: 		null,								// replaced by <body> if needed
-		image:          null
     }
     
     constructor(params) {
@@ -22,20 +21,26 @@ class GamePanel {
 
 		this.createCanvas();
 
-		this.doTrace();
+		this.mode  = "trace";
+		this.image = null;
 
 		this.reset();
 
 	}
 
-	recreateCanvas() {
+	readjust() {
 		this.canvas.parentNode.removeChild(this.canvas);
 
 		this.createCanvas();	
 
-		
+		this.mode =  this.mode; // reset mode
+
+		this.show();
 	}
 
+	/**
+	 * Create a canvas to cover all the available screen
+	 */
 	createCanvas() {
 		const parent = this.params.parent ? this.params.parent : document.querySelector("body")
 
@@ -58,9 +63,13 @@ class GamePanel {
 		 * https://stackoverflow.com/questions/48124372/pointermove-event-not-working-with-touch-why-not
 		*/
 		this.canvas.style.touchAction = "none";
-	
+
+		this.reset();
 	}
 
+	/**
+	 * Assign width and height properties to reflect the available screen size
+	 */
 	computeSize() {
 		const win = window;
     	const docElement = document.documentElement;
@@ -72,21 +81,62 @@ class GamePanel {
 	}
 
 	/**
-	 * Interact with the game panel by tracing
+	 * Change background image URL.
+	 * Setting the current URL produces no effect.
+	 * Changing the URL of setting it for the first time resets the drawing
 	 */
-	doTrace() {
-		this.canvas.onpointerdown = this.tracePointerDown.bind(this);
-		this.canvas.onpointermove = this.tracePointerMove.bind(this);
-		this.canvas.onpointerup   = this.tracePointerUp.bind(this);
+	set imageURL(url) {
+		if(!this.image || this.image.src !== url ) {
+			this.image = new Image();
+			this.image.onload = this.show.bind(this);
+			this.image.src = url;
+			this.reset();
+		}
 	}
 
 	/**
-	 * Interact with the game panel by tapping
+	 * URL of current background image 
 	 */
-	doTap() {
-		this.canvas.onpointerdown = this.tapPointerDown.bind(this);
-		this.canvas.onpointermove = null;
-		this.canvas.onpointerup   = null;
+	get imageURL() {
+		return this.image.src;
+	}
+
+	/**
+	 * Change interaction mode. Current values are:
+	 * 	trace - lines with stylus, finger or mouse 
+	 * 	tap - to create small circles
+	 */
+	set mode(value) {
+		const willBeTrace = value === "trace";
+		const needsReset = willBeTrace !== this.isTrace;
+
+		switch(value) {
+			case "trace":
+			this.canvas.onpointerdown = this.tracePointerDown.bind(this);
+			this.canvas.onpointermove = this.tracePointerMove.bind(this);
+			this.canvas.onpointerup   = this.tracePointerUp.bind(this);
+			break;
+			case "tap":
+			this.canvas.onpointerdown = this.tapPointerDown.bind(this);
+			this.canvas.onpointermove = null;
+			this.canvas.onpointerup   = null;
+			break;
+			default:
+				throw new Error(`invalid mode ${mode}`);
+		}
+
+		this.isTrace = willBeTrace;
+
+		if(needsReset)
+			this.reset;
+	}
+
+	/**
+	 * Get current mode. Vailables modes are "trace" and "tap".
+	 * The former is the default
+	 */
+	get mode() {
+		return this.isTrace ? "trace" : "tap";
 	}
 
 
@@ -160,6 +210,16 @@ class GamePanel {
 	tracePointerUp(event) {
 		this.tracing = false;
 		this.showTraces();
+	}
+
+	/**
+	 * Show according to mode
+	 */
+	show() {
+		if(this.isTrace)
+			this.showTraces();
+		else
+			this.showTaps();
 	}
 
 	/**
