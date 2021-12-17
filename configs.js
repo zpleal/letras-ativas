@@ -2,12 +2,17 @@ let configs = {
 
     panels: [
         {
-            image: "LETRA-A-Aviao.jpg",
-            title: "Letra A - Avião"
+            image: "cenario1.jpg",
+            title: "Cenário 1"
         },
         {
-            image: "a-abelha.jpg",
-            title: "Letra A - Abelha"
+            image: "cenario-parque.jpg",
+            title: "Cenário Parque"
+        },
+	{
+            image: "fonte.jpg",
+            title: "Fonte"
         }
+
     ]
 };

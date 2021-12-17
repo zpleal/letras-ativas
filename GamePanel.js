@@ -8,8 +8,8 @@ class GamePanel {
 		text:				"A B C",
 		fontFamily:		"helvetica",
 		fontSize:				 96,
-		textColor:		"lightGrey",
-		lineColor: 		  "#16264c",						//dark shade of blue
+		color: 		      "#16264c",						//dark shade of blue
+		size:					 50,
 		radius:                  20,
 		parent: 		null,								// replaced by <body> if needed
     }
@@ -23,6 +23,10 @@ class GamePanel {
 
 		this.mode  = "trace";
 		this.image = null;
+
+		this.tapImage = new Image();
+		this.tapImage.src = "fingerprint.png";
+		this.tapImage.onerror = (error) => console.log(error);
 
 		this.reset();
 
@@ -89,6 +93,7 @@ class GamePanel {
 		if(!this.image || this.image.src !== url ) {
 			this.image = new Image();
 			this.image.onload = this.show.bind(this);
+			this.image.onerror = (error) => alert(error);
 			this.image.src = url;
 			this.reset();
 		}
@@ -139,7 +144,6 @@ class GamePanel {
 		return this.isTrace ? "trace" : "tap";
 	}
 
-
 	/**
 	 * @param {string} value
 	 */
@@ -159,6 +163,22 @@ class GamePanel {
 	set fontSize(value) {
 		this.params.fontSize = value;
 		this.reset();
+	}
+
+	set color(value)  {
+		this.params.color = value;
+	}
+
+	get color() {
+		return this.params.color;
+	}
+
+	set size(value)  {
+		this.params.size = value;
+	}
+
+	get size() {
+		return this.params.size;
 	}
 
 	/**
@@ -228,14 +248,24 @@ class GamePanel {
 	 showTaps() {
 		const gc = this.gc;
 		const params = this.params;
+		const size = this.params.size;
 
 		this.showBackgroundImage();
 
 		for(let point of this.points) {
+			/*
+			gc.fillStyle = params.color
+			gc.fillRect(0, 0, this.width, this.height);
+			gc.globalCompositeOperation = "destination-in";
+			*/
+			gc.drawImage(this.tapImage , point.x, point.y,size,size);
+
+			/*
 			gc.beginPath();
 			gc.arc(point.x, point.y, params.radius, 0, 2 * Math.PI, false);
 			gc.fillStyle = 'grey';
 			gc.fill();
+			*/
 		}
 	 }
 
@@ -248,7 +278,8 @@ class GamePanel {
 
 		this.showBackgroundImage();
 
-		gc.fillStyle = this.params.lineColor;
+		gc.strokeStyle = this.params.color;
+		gc.lineWidth = this.params.size / 10;
 		for(let stroke of this.strokes) {
 			gc.beginPath();
 			

@@ -16,7 +16,9 @@ window.addEventListener("load",() => {
         doFullScreen();
 
         gamePanel.imageURL = getRadioValue('panel');
-        gamePanel.mode = getRadioValue('mode');
+        gamePanel.color    = $('color').value;
+        gamePanel.size     = $('size').value;
+        gamePanel.mode     = getRadioValue('mode');
         
         configsDialog.style.display = 'none';
     };
