@@ -1,5 +1,7 @@
 
-$ = (name) => document.getElementById(name);
+import screenfull from './node_modules/screenfull/index.js';
+
+const $ = (name) => document.getElementById(name);
 
 let gamePanel = null;
 
@@ -8,7 +10,10 @@ window.addEventListener("load",() => {
 
     gamePanel = new GamePanel({});
 
-    populateImagesPanel();
+    fetch("configs.js")
+        .then( response => response.json())
+        .then( configs  => populateImagesPanel(configs))
+        .catch( console.log );
 
     $('openConfigs').onclick = () => configsDialog.style.display = 'block';
     $('ok').onclick = () => {
@@ -33,7 +38,31 @@ window.addEventListener('resize',() => {
         gamePanel.readjust();
 });
 
+function doFullScreen() {
+    if (screenfull.isEnabled) {
+        const fullscreen = getRadioValue('fullscreen');
 
+        switch(fullscreen) {
+            case 'yes': 
+                if (! screenfull.isFullscreen) {
+                    const body = document.querySelector('body');
+                    screenfull.request(body,{ navigationUI: "hide" });
+                }
+                break;
+            case 'no':   
+                if (screenfull.isFullscreen)
+                    screenfull.exit()
+                break;
+                default: 
+                    console.log('invalid fullscreen value: '+fullscreen);
+        }
+    }   else
+        console.log('fullscreen disabled');
+
+}
+
+
+/*
 function doFullScreen() {
     const fullscreen = getRadioValue('fullscreen');
     switch(fullscreen) {
@@ -48,7 +77,7 @@ function doFullScreen() {
         default: console.log('invalid fullscreen value: '+fullscreen);
     }
 }
-
+*/
 
 function getRadioValue(name) {
     const radios = document.querySelectorAll('input[name="'+name+'"]');
@@ -59,7 +88,7 @@ function getRadioValue(name) {
     }
 }
 
-function populateImagesPanel() {
+function populateImagesPanel(configs) {
     const panels = $('panels');
     let first = true;
 

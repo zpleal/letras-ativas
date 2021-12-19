@@ -3,15 +3,16 @@
 class GamePanel {
     
     static defaults = {
-		width: 					300,
-		height: 				300,
-		text:				"A B C",
-		fontFamily:		"helvetica",
-		fontSize:				 96,
-		color: 		      "#16264c",						//dark shade of blue
-		size:					 50,
-		radius:                  20,
-		parent: 		null,								// replaced by <body> if needed
+		width: 					    300,
+		height: 				    300,
+		text:				    "A B C",
+		fontFamily:		    "helvetica",
+		fontSize:				     96,
+		color: 		          "#16264c",  //dark shade of blue
+		size:					     50,
+		radius:                      20,
+		baseTapImage: "fingerprint.png",  // image for tapping (color will be appyied)
+		parent: 		null,			  // replaced by <body> if needed
     }
     
     constructor(params) {
@@ -24,10 +25,6 @@ class GamePanel {
 		this.mode  = "trace";
 		this.image = null;
 
-		this.tapImage = new Image();
-		this.tapImage.src = "fingerprint.png";
-		this.tapImage.onerror = (error) => console.log(error);
-
 		this.reset();
 
 	}
@@ -36,6 +33,8 @@ class GamePanel {
 		this.canvas.parentNode.removeChild(this.canvas);
 
 		this.createCanvas();	
+
+		this.adjustBackgroundImage();
 
 		this.mode =  this.mode; // reset mode
 
@@ -92,7 +91,10 @@ class GamePanel {
 	set imageURL(url) {
 		if(!this.image || this.image.src !== url ) {
 			this.image = new Image();
-			this.image.onload = this.show.bind(this);
+			this.image.onload = () => {
+				this.adjustBackgroundImage();
+				this.show();
+			}
 			this.image.onerror = (error) => alert(error);
 			this.image.src = url;
 			this.reset();
@@ -108,8 +110,9 @@ class GamePanel {
 
 	/**
 	 * Change interaction mode. Current values are:
-	 * 	trace - lines with stylus, finger or mouse 
-	 * 	tap - to create small circles
+	 * 	trace - lines 
+	 * 	tap   - dots (image)
+	 * created stylus, finger or mouse  
 	 */
 	set mode(value) {
 		const willBeTrace = value === "trace";
@@ -125,6 +128,9 @@ class GamePanel {
 			this.canvas.onpointerdown = this.tapPointerDown.bind(this);
 			this.canvas.onpointermove = null;
 			this.canvas.onpointerup   = null;
+
+			this.makeTapImage();
+
 			break;
 			default:
 				throw new Error(`invalid mode ${mode}`);
@@ -135,6 +141,36 @@ class GamePanel {
 		if(needsReset)
 			this.reset;
 	}
+
+	/**
+	 * Make an image to show taps (e.g. a fingerprint)
+	 * This image is colored with the current defined color 
+	 */
+	makeTapImage() {
+		const fp = new Image();
+		
+		fp.src = this.params.baseTapImage;
+		fp.onload = () => {
+			const canvas = document.createElement("canvas");
+			const gc = canvas.getContext("2d");
+			const size = this.params.size;
+
+			canvas.width = 	size;
+			canvas.height = size;
+
+			gc.fillStyle = this.params.color;			
+			gc.fillRect(0, 0, size, size);
+			gc.globalCompositeOperation = "destination-in";
+			gc.drawImage(fp,0,0,size,size);
+
+			this.tapImage = new Image();
+			this.tapImage.src = canvas.toDataURL();
+			this.tapImage.onerror = (error) => console.log(error);
+		};
+		fp.onerror = console.log;
+
+	}
+
 
 	/**
 	 * Get current mode. Vailables modes are "trace" and "tap".
@@ -194,7 +230,7 @@ class GamePanel {
 	}
 
 	/**
-	 * Handle a pointerdown event when tappi
+	 * Handle a pointerdown event when tapping
 	 * @param {*} event 
 	 */
 	tapPointerDown(event) {
@@ -253,12 +289,10 @@ class GamePanel {
 		this.showBackgroundImage();
 
 		for(let point of this.points) {
-			/*
-			gc.fillStyle = params.color
-			gc.fillRect(0, 0, this.width, this.height);
-			gc.globalCompositeOperation = "destination-in";
-			*/
-			gc.drawImage(this.tapImage , point.x, point.y,size,size);
+
+			gc.drawImage(this.tapImage, 
+				point.x - size/2, point.y - size/2 , 
+				size, size);
 
 			/*
 			gc.beginPath();
@@ -295,11 +329,58 @@ class GamePanel {
 
 	}
 
-	showBackgroundImage() {
-		this.canvas.width = this.canvas.width;
+	/**
+	 * Adjust background window transformation according to canvas
+	 * size and orientation (landscape or portrait).
+	 */
+	adjustBackgroundImage() {
+		const cWidth     = this.width;
+		const cHeight    = this.height;
+		const iWidth     = this.image.naturalWidth;
+		const iHeight    = this.image.naturalHeight;
 
-		if(this.image)
-			this.gc.drawImage(this.image,0,0,this.width,this.height);
+		if( cWidth < cHeight ) {
+			const xScale     = cWidth  / iHeight;
+			const yScale     = cHeight / iWidth;
+			this.scale = Math.min(xScale,yScale);
+
+			this.x0 = cWidth - (cWidth  - (iHeight  * this.scale)) / 2;
+			this.y0 = (cHeight - (iWidth * this.scale)) / 2;
+
+			this.rotate =  Math.PI /2;
+
+		} else {
+			const xScale     = cWidth  / iWidth;
+			const yScale     = cHeight / iHeight;
+			this.scale = Math.min(xScale,yScale);
+		
+			this.x0 = (cWidth - (iWidth  * this.scale)) / 2; 
+			this.y0 = (cHeight - (iHeight * this.scale)) * this.scale / 2;
+
+			this.rotate = 0;
+		}
+
+
+	
+	
+
+		
+
+
+	}
+
+	showBackgroundImage() {
+		if(this.image) {
+			const gc = this.gc;
+
+			this.canvas.width = this.canvas.width;
+
+			gc.translate(this.x0, this.y0);
+			gc.scale(this.scale, this.scale);
+			gc.rotate(this.rotate);
+
+			gc.drawImage(this.image,0,0);
+		}
 	}
 
 	/**
