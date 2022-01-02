@@ -1,7 +1,18 @@
 
-import screenfull from './node_modules/screenfull/index.js';
-
 const $ = (name) => document.getElementById(name);
+
+const DEFAULT_SELECTIONS = {
+    radios: {
+        mode: "trace" ,
+        fullscreen: "yes"
+    },
+    values: {
+        panel: null,
+        size: 50,
+        color: "#16264c"
+    }
+};
+
 
 let gamePanel = null;
 
@@ -10,7 +21,7 @@ window.addEventListener("load",() => {
 
     gamePanel = new GamePanel({});
 
-    fetch("configs.js")
+    fetch("panels.js")
         .then( response => response.json())
         .then( configs  => populateImagesPanel(configs))
         .catch( console.log );
@@ -20,12 +31,15 @@ window.addEventListener("load",() => {
 
         doFullScreen();
 
-        gamePanel.imageURL = getRadioValue('panel');
+        // gamePanel.imageURL = getRadioValue('panel');
+        gamePanel.imageURL = $('panel').value;
         gamePanel.color    = $('color').value;
         gamePanel.size     = $('size').value;
         gamePanel.mode     = getRadioValue('mode');
         
         configsDialog.style.display = 'none';
+
+        saveSelections();
     };
     $('cancel').onclick = () => {
         configsDialog.style.display = 'none';
@@ -79,6 +93,41 @@ function doFullScreen() {
 }
 */
 
+const SELECTIONS_KEY = "active letters selections";
+
+
+function saveSelections() {
+    const selections = { radios: {}, values: {} };
+
+    for(const name in DEFAULT_SELECTIONS.radios)
+        selections.radios[name] = getRadioValue(name);
+    
+    for(const id in DEFAULT_SELECTIONS.values)
+        selections.values[id] = $(id).value;
+
+    localStorage.setItem(SELECTIONS_KEY,JSON.stringify(selections));
+}
+
+function restoreSelections() {
+    const saved = localStorage.getItem(SELECTIONS_KEY);
+    const selections = saved ? JSON.parse(saved) : DEFAULT_SELECTIONS;
+
+    for(const name in DEFAULT_SELECTIONS.radios)
+        setRadioValue(name,selections.radios[name]);
+    
+    for(const id in DEFAULT_SELECTIONS.values)
+        $(id).value = selections.values[id];
+}
+
+function setRadioValue(name,value) {
+    const radios = document.querySelectorAll('input[name="'+name+'"]');
+
+    for (const radio of radios) {
+        if (radio.value === value) 
+            radio.checked = true;
+    }
+}
+
 function getRadioValue(name) {
     const radios = document.querySelectorAll('input[name="'+name+'"]');
 
@@ -88,6 +137,40 @@ function getRadioValue(name) {
     }
 }
 
+function populateImagesPanel(panelStruct) {
+    const panel = $('panel');
+
+    populateOn(panel,panelStruct);
+
+    panel.onclick = (event) => {
+        const value  = panel.value;
+        const option = panel.querySelector(`option[value="${value}"]`);
+
+        option.selected = true;
+    }; 
+
+    restoreSelections();
+}    
+
+function populateOn(parent,panelStruct) {
+    for(const label in panelStruct) {
+        const value  = panelStruct[label];
+        const isLeaf = typeof value === "string";
+        const type   = isLeaf ? "option" : "optgroup"
+        const element = document.createElement(type);
+
+        element.label = label;
+        parent.appendChild(element);
+
+        if(isLeaf)
+            element.value = value;
+        else
+            populateOn(element,value);
+    }
+}
+
+
+/*
 function populateImagesPanel(configs) {
     const panels = $('panels');
     let first = true;
@@ -116,3 +199,4 @@ function populateImagesPanel(configs) {
         panels.appendChild(document.createElement("br"));
     }
 }
+*/

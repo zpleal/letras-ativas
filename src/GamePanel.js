@@ -1,24 +1,25 @@
-
+const defaults = {
+	width: 					    300,
+	height: 				    300,
+	text:				    "A B C",
+	fontFamily:		    "helvetica",
+	fontSize:				     96,
+	color: 		          "#16264c",  //dark shade of blue
+	size:					     50,
+	radius:                      20,
+	baseTapImage: "fingerprint.png",  // image for tapping (color will be appyied)
+	parent: 		null,			  // replaced by <body> if needed
+}
 
 class GamePanel {
     
-    static defaults = {
-		width: 					    300,
-		height: 				    300,
-		text:				    "A B C",
-		fontFamily:		    "helvetica",
-		fontSize:				     96,
-		color: 		          "#16264c",  //dark shade of blue
-		size:					     50,
-		radius:                      20,
-		baseTapImage: "fingerprint.png",  // image for tapping (color will be appyied)
-		parent: 		null,			  // replaced by <body> if needed
-    }
+
     
     constructor(params) {
 		this.params = {};
 
-		Object.assign(this.params, { ...GamePanel.defaults ,...params });
+		Object.assign(this.params, defaults );
+		Object.assign(this.params, params );
 
 		this.createCanvas();
 
@@ -26,7 +27,6 @@ class GamePanel {
 		this.image = null;
 
 		this.reset();
-
 	}
 
 	readjust() {
@@ -67,8 +67,29 @@ class GamePanel {
 		*/
 		this.canvas.style.touchAction = "none";
 
-		this.reset();
+		if(this.changedDimension())
+			this.reset();
 	}
+
+	/**
+	 * Checks if this screen has actually changed dimensions of just rotated
+	 * @return true if dimensions changed and false otherwise
+	 */
+	changedDimension() {
+		const changed = (
+				this.width  !== this.previousWidth ||
+				this.height !== this.previousHeight 
+			) && (
+				this.width  !== this.previousHeight ||
+				this.height !== this.previousWidth
+			);
+
+		this.previousWidth  = this.width;
+		this.previousHeight = this.height;
+
+		return changed;
+	}
+
 
 	/**
 	 * Assign width and height properties to reflect the available screen size
@@ -89,7 +110,7 @@ class GamePanel {
 	 * Changing the URL of setting it for the first time resets the drawing
 	 */
 	set imageURL(url) {
-		if(!this.image || this.image.src !== url ) {
+		if(!this.image || ! this.image.src.endsWith(url) ) {
 			this.image = new Image();
 			this.image.onload = () => {
 				this.adjustBackgroundImage();
@@ -120,18 +141,16 @@ class GamePanel {
 
 		switch(value) {
 			case "trace":
-			this.canvas.onpointerdown = this.tracePointerDown.bind(this);
-			this.canvas.onpointermove = this.tracePointerMove.bind(this);
-			this.canvas.onpointerup   = this.tracePointerUp.bind(this);
-			break;
+				this.canvas.onpointerdown = this.tracePointerDown.bind(this);
+				this.canvas.onpointermove = this.tracePointerMove.bind(this);
+				this.canvas.onpointerup   = this.tracePointerUp.bind(this);
+				break;
 			case "tap":
-			this.canvas.onpointerdown = this.tapPointerDown.bind(this);
-			this.canvas.onpointermove = null;
-			this.canvas.onpointerup   = null;
-
-			this.makeTapImage();
-
-			break;
+				this.canvas.onpointerdown = this.tapPointerDown.bind(this);
+				this.canvas.onpointermove = null;
+				this.canvas.onpointerup   = null;
+				this.makeTapImage();
+				break;
 			default:
 				throw new Error(`invalid mode ${mode}`);
 		}
@@ -139,29 +158,33 @@ class GamePanel {
 		this.isTrace = willBeTrace;
 
 		if(needsReset)
-			this.reset;
+			this.reset();
+		else
+			this.show();
 	}
 
 	/**
 	 * Make an image to show taps (e.g. a fingerprint)
-	 * This image is colored with the current defined color 
+	 * The image is sized and colored to the current selection
+	 * (aspect ration of original image is kept)
 	 */
 	makeTapImage() {
 		const fp = new Image();
 		
 		fp.src = this.params.baseTapImage;
 		fp.onload = () => {
+			const aspectRatio = fp.naturalWidth / fp.naturalHeight;
 			const canvas = document.createElement("canvas");
 			const gc = canvas.getContext("2d");
 			const size = this.params.size;
 
 			canvas.width = 	size;
-			canvas.height = size;
+			canvas.height = size / aspectRatio;
 
 			gc.fillStyle = this.params.color;			
-			gc.fillRect(0, 0, size, size);
+			gc.fillRect(0, 0, canvas.width, canvas.height);
 			gc.globalCompositeOperation = "destination-in";
-			gc.drawImage(fp,0,0,size,size);
+			gc.drawImage(fp,0,0,canvas.width,canvas.height);
 
 			this.tapImage = new Image();
 			this.tapImage.src = canvas.toDataURL();
@@ -185,7 +208,7 @@ class GamePanel {
 	 */
 	 set text(value) {
 		this.params.text = value;
-		this.reset();
+		this.show();
 	}
 
 	/**
@@ -193,16 +216,16 @@ class GamePanel {
 	 */
 	set fontFamily(value) {
 		this.params.fontFamily = value;
-		this.reset();
+		this.show();
 	}
 
-	set fontSize(value) {
-		this.params.fontSize = value;
-		this.reset();
+	get fontSize() {
+		return this.params.fontSize;
 	}
 
 	set color(value)  {
 		this.params.color = value;
+		this.show();
 	}
 
 	get color() {
@@ -211,6 +234,7 @@ class GamePanel {
 
 	set size(value)  {
 		this.params.size = value;
+		this.show();
 	}
 
 	get size() {
@@ -226,7 +250,7 @@ class GamePanel {
 		this.tracing = false;
 
 		// wait for font to be loaded
-		document.fonts.load(this.font).then( this.showTraces.bind(this) ); 
+		document.fonts.load(this.font).then( () => this.show() ); 
 	}
 
 	/**
@@ -360,26 +384,28 @@ class GamePanel {
 			this.rotate = 0;
 		}
 
-
-	
-	
-
-		
-
-
 	}
 
+	/**
+	 * Show background image with computed adjustements.
+	 * This method should be called before drawing strokes or taps
+	 */
 	showBackgroundImage() {
 		if(this.image) {
 			const gc = this.gc;
 
 			this.canvas.width = this.canvas.width;
+			
+			gc.fillStyle = "white";
+			gc.fillRect(0,0,this.width,this.height);
 
+			gc.save();
 			gc.translate(this.x0, this.y0);
 			gc.scale(this.scale, this.scale);
 			gc.rotate(this.rotate);
 
 			gc.drawImage(this.image,0,0);
+			gc.restore();
 		}
 	}
 

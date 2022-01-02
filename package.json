@@ -1,5 +1,9 @@
 {
-  "dependencies": {
-    "screenfull": "^6.0.0"
+  "devDependencies": {
+    "@babel/cli": "^7.16.0",
+    "@babel/core": "^7.16.5"
+  },
+  "scripts": {
+    "build": "babel src -d build"
   }
 }

@@ -52,7 +52,7 @@ const nativeAPI = (() => {
 	const returnValue = {};
 
 	for (const methodList of methodMap) {
-		const exitFullscreenMethod = methodList?.[1];
+		const exitFullscreenMethod = methodList ? methodList[1] : undefined; // methodList?.[1];
 		if (exitFullscreenMethod in document) {
 			for (const [index, method] of methodList.entries()) {
 				returnValue[unprefixedMethods[index]] = method;
@@ -140,7 +140,7 @@ Object.defineProperties(screenfull, {
 	},
 	element: {
 		enumerable: true,
-		get: () => document[nativeAPI.fullscreenElement] ?? undefined,
+		get: () => document[nativeAPI.fullscreenElement] ? document[nativeAPI.fullscreenElement] : undefined // document[nativeAPI.fullscreenElement] ?? undefined,
 	},
 	isEnabled: {
 		enumerable: true,
@@ -152,5 +152,3 @@ Object.defineProperties(screenfull, {
 if (!nativeAPI) {
 	screenfull = {isEnabled: false};
 }
-
-export default screenfull;

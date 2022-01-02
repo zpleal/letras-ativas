@@ -43,6 +43,10 @@ canvas {
   box-shadow: 3px 3px 2px 2px lightgray;
 }
 
+#panel {
+  width: 90%;
+}
+
 .button {
  display: inline-block;
  width: 5em;
@@ -69,4 +73,9 @@ canvas {
 
 input[type=radio] {
   cursor: pointer;
+}
+
+fieldset {
+  display: flex;
+  justify-content: space-around;
 }
